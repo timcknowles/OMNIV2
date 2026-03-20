@@ -411,7 +411,7 @@
     <div class="title-badge">CRRT · RCA Protocol</div>
     <h1>Regional Citrate <span>Anticoagulation</span></h1>
     <p class="subtitle">Dose selection guide — titrate 6-hourly</p>
-    <div class="version-stamp" id="version-stamp">loading…</div>
+    <div class="version-stamp" id="version-stamp">v1.1</div>
   </header>
 
   <div class="card" id="card-weight">
@@ -492,46 +492,23 @@
 </div>
 
 <script>
-  // ── Service Worker with auto-update ─────────────────
+  // ── Service Worker ───────────────────────────────────
   if ('serviceWorker' in navigator) {
-    // Cache-bust sw.js so GitHub Pages never serves a stale copy
-    const swUrl = './sw.js?v=' + Date.now();
-
-    navigator.serviceWorker.register(swUrl).then(reg => {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
       reg.update();
-
-      function applyUpdate(worker) {
-        worker.postMessage({ type: 'SKIP_WAITING' });
-      }
-
-      if (reg.waiting) applyUpdate(reg.waiting);
-
-      reg.addEventListener('updatefound', () => {
-        const newWorker = reg.installing;
-        newWorker.addEventListener('statechange', () => {
-          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-            applyUpdate(newWorker);
-          }
-        });
-      });
     }).catch(e => console.warn('SW failed:', e));
 
-    let refreshing = false;
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      if (!refreshing) { refreshing = true; window.location.reload(); }
-    });
-
-    // Pull version from active SW cache name and display it
+    // Show version from active SW
     navigator.serviceWorker.ready.then(() => {
       const ctrl = navigator.serviceWorker.controller;
       if (ctrl) {
-        const channel = new MessageChannel();
-        channel.port1.onmessage = e => {
+        const ch = new MessageChannel();
+        ch.port1.onmessage = e => {
           if (e.data && e.data.version) {
             document.getElementById('version-stamp').textContent = e.data.version;
           }
         };
-        ctrl.postMessage({ type: 'GET_VERSION' }, [channel.port2]);
+        ctrl.postMessage({ type: 'GET_VERSION' }, [ch.port2]);
       }
     });
   }
