@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="80" fill="#0d1117"/>
+  <!-- Column body -->
+  <rect x="176" y="110" width="160" height="292" rx="4" fill="none" stroke="#cccccc" stroke-width="10"/>
+  <!-- Red top cap -->
+  <rect x="196" y="60" width="120" height="52" rx="6" fill="#FF0000"/>
+  <!-- Blue bottom cap -->
+  <rect x="176" y="400" width="160" height="52" rx="6" fill="#0000ff"/>
+  <!-- Red chevrons (down) -->
+  <path d="M190 148 L256 196 L322 148" fill="#FF4444" stroke="none"/>
+  <path d="M190 210 L256 258 L322 210" fill="#FF4444" stroke="none" opacity="0.7"/>
+  <path d="M190 272 L256 320 L322 272" fill="#FF4444" stroke="none" opacity="0.4"/>
+  <!-- Amber chevrons (up) -->
+  <path d="M190 364 L256 316 L322 364" fill="#fbcb43" stroke="none"/>
+  <path d="M190 302 L256 254 L322 302" fill="#fbcb43" stroke="none" opacity="0.7"/>
+</svg>

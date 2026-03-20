@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0d1117">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="RCA Calc">
+<link rel="manifest" href="manifest.json">
+<title>RCA Dose Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2128;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #7d8590;
+    --teal: #2dd4bf;
+    --teal-dim: #1a4a45;
+    --amber: #fbbf24;
+    --amber-dim: #3d2e0a;
+    --red: #f87171;
+    --red-dim: #3d1515;
+    --blue: #60a5fa;
+    --blue-dim: #1a2a4a;
+    --green: #4ade80;
+    --green-dim: #0f2e1a;
+    --stop-red: #ef4444;
+    --stop-bg: #2d0f0f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── SPLASH ─────────────────────────────────────────── */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: #0d1117;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  #splash.hide {
+    opacity: 0;
+    transform: scale(1.04);
+    pointer-events: none;
+  }
+
+  #splash svg {
+    height: min(55vh, 320px);
+    width: auto;
+  }
+
+  .splash-title {
+    margin-top: 28px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--teal);
+    opacity: 0;
+    animation: fadeIn 0.8s ease 1.2s forwards;
+  }
+
+  .splash-sub {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--muted);
+    opacity: 0;
+    animation: fadeIn 0.8s ease 1.5s forwards;
+  }
+
+  .splash-enter {
+    margin-top: 40px;
+    padding: 12px 32px;
+    border-radius: 8px;
+    border: 1.5px solid var(--teal);
+    background: var(--teal-dim);
+    color: var(--teal);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+    opacity: 0;
+    animation: fadeIn 0.8s ease 2s forwards;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .splash-enter:hover, .splash-enter:active {
+    background: var(--teal);
+    color: #0d1117;
+  }
+
+  @keyframes fadeIn { to { opacity: 1; } }
+
+  @keyframes chevron-down-lights {
+    0%        { fill: #ffcccc }
+    20%       { fill: #FF0000 }
+    40%, 100% { fill: #ffcccc }
+  }
+  .chevron-down-lights-light { animation: chevron-down-lights 2.5s ease infinite; }
+  .chevron-down-lights-light--2  { animation-delay: .2s }
+  .chevron-down-lights-light--3  { animation-delay: .4s }
+  .chevron-down-lights-light--4  { animation-delay: .6s }
+  .chevron-down-lights-light--5  { animation-delay: .8s }
+  .chevron-down-lights-light--6  { animation-delay: 1.0s }
+  .chevron-down-lights-light--7  { animation-delay: 1.2s }
+  .chevron-down-lights-light--8  { animation-delay: 1.4s }
+  .chevron-down-lights-light--9  { animation-delay: 1.6s }
+  .chevron-down-lights-light--10 { animation-delay: 1.8s }
+  .chevron-down-lights-light--11 { animation-delay: 2.0s }
+
+  @keyframes chevron-up-lights {
+    0%        { fill: #fdefc6 }
+    20%       { fill: #fbcb43 }
+    40%, 100% { fill: #fdefc6 }
+  }
+  .chevron-up-lights-light { animation: chevron-up-lights 2.5s ease infinite; }
+  .chevron-up-lights-light--2  { animation-delay: .2s }
+  .chevron-up-lights-light--3  { animation-delay: .4s }
+  .chevron-up-lights-light--4  { animation-delay: .6s }
+  .chevron-up-lights-light--5  { animation-delay: .8s }
+  .chevron-up-lights-light--6  { animation-delay: 1.0s }
+  .chevron-up-lights-light--7  { animation-delay: 1.2s }
+  .chevron-up-lights-light--8  { animation-delay: 1.4s }
+  .chevron-up-lights-light--9  { animation-delay: 1.6s }
+  .chevron-up-lights-light--10 { animation-delay: 1.8s }
+  .chevron-up-lights-light--11 { animation-delay: 2.0s }
+
+  /* ── MAIN APP ────────────────────────────────────────── */
+  #app {
+    display: none;
+    padding: 24px 16px 48px;
+    animation: fadeIn 0.5s ease forwards;
+  }
+
+  header { text-align: center; margin-bottom: 36px; }
+
+  .title-badge {
+    display: inline-block;
+    background: var(--teal-dim);
+    color: var(--teal);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    border: 1px solid var(--teal);
+    opacity: 0.8;
+  }
+
+  h1 { font-size: clamp(22px, 4vw, 32px); font-weight: 600; letter-spacing: -0.02em; }
+  h1 span { color: var(--teal); }
+  .subtitle { color: var(--muted); font-size: 14px; margin-top: 6px; }
+
+  .version-stamp {
+    display: inline-block;
+    margin-top: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    letter-spacing: 0.05em;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+    max-width: 560px;
+    margin: 0 auto 16px;
+  }
+
+  .card-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--teal);
+  }
+
+  .input-group { margin-bottom: 20px; }
+  label { display: block; font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 8px; }
+  label strong { color: var(--text); font-size: 15px; }
+  .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
+
+  .btn {
+    flex: 1;
+    min-width: 70px;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    background: var(--surface2);
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align: center;
+    line-height: 1.3;
+  }
+
+  .btn:hover, .btn:active { border-color: var(--teal); color: var(--teal); }
+  .btn.active { background: var(--teal-dim); border-color: var(--teal); color: var(--teal); font-weight: 500; }
+  .btn.weight-btn.active { background: var(--blue-dim); border-color: var(--blue); color: var(--blue); }
+  .btn.ph-btn.active { background: var(--amber-dim); border-color: var(--amber); color: var(--amber); }
+  .btn.k-btn.active { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
+  .blood-flow-card {
+    max-width: 560px;
+    margin: 0 auto 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 24px;
+    display: none;
+    animation: fadeUp 0.25s ease;
+  }
+
+  .blood-flow-inner { display: flex; align-items: center; justify-content: space-between; }
+  .bf-label { font-size: 13px; color: var(--muted); }
+  .bf-value { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--red); }
+  .bf-unit { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  .alert {
+    max-width: 560px;
+    margin: 0 auto 16px;
+    background: var(--amber-dim);
+    border: 1px solid var(--amber);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--amber);
+    display: none;
+    line-height: 1.5;
+  }
+  .alert strong { display: block; margin-bottom: 2px; }
+
+  #result { max-width: 560px; margin: 0 auto; display: none; }
+
+  .result-card {
+    border-radius: 12px;
+    padding: 28px 24px;
+    border: 2px solid;
+    animation: fadeUp 0.3s ease;
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-card.normal { background: var(--green-dim); border-color: var(--green); }
+  .result-card.stop   { background: var(--stop-bg);   border-color: var(--stop-red); }
+
+  .result-label { font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; }
+  .result-card.normal .result-label { color: var(--green); }
+  .result-card.stop   .result-label { color: var(--stop-red); }
+
+  .result-main { font-size: clamp(36px, 8vw, 56px); font-weight: 600; font-family: 'DM Mono', monospace; letter-spacing: -0.02em; line-height: 1; margin-bottom: 4px; }
+  .result-card.normal .result-main { color: var(--green); }
+  .result-card.stop   .result-main { color: var(--stop-red); font-size: clamp(28px, 6vw, 40px); }
+
+  .result-unit { font-size: 16px; color: var(--muted); font-weight: 400; margin-bottom: 16px; }
+
+  .result-summary {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    border-top: 1px solid rgba(255,255,255,0.08);
+    padding-top: 14px;
+  }
+  .result-summary span { color: var(--text); font-weight: 500; }
+
+  .algo-card {
+    max-width: 560px;
+    margin: 24px auto 0;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px 20px;
+  }
+  .algo-title { font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .algo-item { display: flex; align-items: flex-start; gap: 10px; font-size: 12.5px; color: var(--muted); line-height: 1.5; margin-bottom: 6px; }
+  .algo-item:last-child { margin-bottom: 0; }
+  .algo-item::before { content: '□'; flex-shrink: 0; color: var(--border); font-size: 14px; margin-top: -1px; }
+  .algo-item.highlight { color: var(--red); font-weight: 500; }
+  .algo-item.highlight::before { color: var(--red); }
+
+  .reset-btn {
+    display: block;
+    max-width: 560px;
+    margin: 12px auto 0;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    padding: 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--muted); color: var(--text); }
+
+  .offline-badge {
+    display: none;
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    background: var(--amber-dim);
+    border: 1px solid var(--amber);
+    color: var(--amber);
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    padding: 6px 12px;
+    border-radius: 20px;
+    z-index: 50;
+  }
+</style>
+</head>
+<body>
+
+<!-- ── SPLASH ─────────────────────────────────────────── -->
+<div id="splash">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 479 1630">
+    <g class="chevron-down-lights" fill="none" stroke="none" stroke-width="1">
+      <path class="chevron-down-lights-light chevron-down-lights-light--1"  d="M64.07 215.49s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--2"  d="M64.426 322.906s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--3"  d="M63.31 432.794s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--4"  d="M64.426 542.682s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--5"  d="M63.31 652.57s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--6"  d="M64.426 759.84s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--7"  d="M63.31 869.728s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--8"  d="M64.426 979.616s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--9"  d="M64.426 1092.12s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--10" d="M64.426 1202.008s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+      <path class="chevron-down-lights-light chevron-down-lights-light--11" d="M64.426 1304.779s-.11 45.81.54 46.98c.94 1.71 76.93 61.23 78.93 61.23s77.99-59.52 78.93-61.23c.65-1.17.55-46.98.55-46.98l-79.48 60.53-79.47-60.53z"/>
+    </g>
+    <g class="chevron-up-lights" fill="none" stroke="none" stroke-width="1">
+      <path class="chevron-up-lights-light chevron-up-lights-light--1"  d="M412 1412.87s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--2"  d="M412.871 1304.477s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--3"  d="M412.871 1194.59s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--4"  d="M412.871 1084.702s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--5"  d="M413.255 980.047s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--6"  d="M412.871 864.927s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--7"  d="M413.255 755.04s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--8"  d="M413.255 645.151s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--9"  d="M412.871 535.264s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--10" d="M412.871 425.376s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+      <path class="chevron-up-lights-light chevron-up-lights-light--11" d="M412.871 325.221s.1-45.81-.55-46.98c-.94-1.71-76.93-61.23-78.93-61.23-1.99 0-77.99 59.52-78.93 61.23-.65 1.17-.54 46.98-.54 46.98l79.47-60.53 79.48 60.53z"/>
+    </g>
+    <g stroke-width="4" stroke="#cccccc" fill="none">
+      <path d="M63.67 215v1198.88H413.1V215H63.67z"/>
+      <path d="M64.07 104.47V215H413.1V104.47s-349.03 1.84-349.03 0z" fill="#FF0000" stroke="#FF0000"/>
+      <path d="M170.5 1524v71h137v-71h-137z" fill="#0000ff" stroke="#0000ff"/>
+      <path d="M63.56 1413.47V1524h348.03v-110.53s-348.03 1.84-348.03 0z" fill="#0000ff" stroke="#0000ff"/>
+      <path d="M173.288 34.026v71h137v-71h-137z" fill="#FF0000" stroke="#FF0000"/>
+    </g>
+  </svg>
+  <div class="splash-title">RCA Dose Calculator</div>
+  <div class="splash-sub">Regional Citrate Anticoagulation · CRRT</div>
+  <button class="splash-enter" onclick="enterApp()">Enter →</button>
+</div>
+
+<div class="offline-badge" id="offline-badge">⚡ Offline mode</div>
+
+<!-- ── MAIN APP ───────────────────────────────────────── -->
+<div id="app">
+  <header>
+    <div class="title-badge">CRRT · RCA Protocol</div>
+    <h1>Regional Citrate <span>Anticoagulation</span></h1>
+    <p class="subtitle">Dose selection guide — titrate 6-hourly</p>
+    <div class="version-stamp">v1.0 · 2026-03-20</div>
+  </header>
+
+  <div class="card" id="card-weight">
+    <div class="card-title">Step 1 — Ideal Body Weight</div>
+    <div class="input-group">
+      <label><strong>Select weight category</strong></label>
+      <div class="btn-group">
+        <button class="btn weight-btn" onclick="select('weight','lt65','weight-btn')">&lt; 65 kg</button>
+        <button class="btn weight-btn" onclick="select('weight','gte65','weight-btn')">&ge; 65 kg</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card-ph" style="display:none">
+    <div class="card-title">Step 2 — Arterial pH</div>
+    <div class="input-group">
+      <label><strong>Select current pH</strong></label>
+      <div class="btn-group">
+        <button class="btn ph-btn" onclick="select('ph','lt71','ph-btn')">&lt;7.1</button>
+        <button class="btn ph-btn" onclick="select('ph','71-719','ph-btn')">7.10–7.19</button>
+        <button class="btn ph-btn" onclick="select('ph','72-729','ph-btn')">7.20–7.29</button>
+        <button class="btn ph-btn" onclick="select('ph','73-739','ph-btn')">7.30–7.39</button>
+        <button class="btn ph-btn" onclick="select('ph','74-744','ph-btn')">7.40–7.44</button>
+        <button class="btn ph-btn" onclick="select('ph','745-749','ph-btn')">7.45–7.49</button>
+        <button class="btn ph-btn" onclick="select('ph','75-754','ph-btn')">7.50–7.54</button>
+        <button class="btn ph-btn" onclick="select('ph','gt755','ph-btn')">&gt;7.55</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" id="card-k" style="display:none">
+    <div class="card-title">Step 3 — Serum K⁺</div>
+    <div class="input-group">
+      <label><strong>Select potassium (mmol/L)</strong></label>
+      <div class="btn-group">
+        <button class="btn k-btn" onclick="select('k','gt6','k-btn')">&gt;6</button>
+        <button class="btn k-btn" onclick="select('k','55-6','k-btn')">5.5–6</button>
+        <button class="btn k-btn" onclick="select('k','5-55','k-btn')">5–5.5</button>
+        <button class="btn k-btn" onclick="select('k','45-5','k-btn')">4.5–5</button>
+        <button class="btn k-btn" onclick="select('k','4-45','k-btn')">4–4.5</button>
+        <button class="btn k-btn" onclick="select('k','lt4','k-btn')">&lt;4</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="blood-flow-card" id="bf-card">
+    <div class="blood-flow-inner">
+      <div>
+        <div class="bf-label">Blood Flow Rate (Q<sub>B</sub>)</div>
+        <div class="bf-value" id="bf-value">—</div>
+        <div class="bf-unit">mL/hr</div>
+      </div>
+      <div style="text-align:right; font-size:12px; color:var(--muted); line-height:1.6">
+        Based on weight &amp; pH<br>
+        <span id="bf-context" style="color:var(--text)"></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="alert" id="bicarb-alert">
+    <strong>⚠ pH &lt; 7.20 detected</strong>
+    Administer 50 mL of 8.4% Bicarbonate over 30 minutes
+  </div>
+
+  <div id="result">
+    <div class="result-card" id="result-card">
+      <div class="result-label" id="result-label"></div>
+      <div class="result-main" id="result-main"></div>
+      <div class="result-unit" id="result-unit"></div>
+      <div class="result-summary" id="result-summary"></div>
+    </div>
+    <button class="reset-btn" onclick="resetAll()">↺ Start over</button>
+  </div>
+
+  <div class="algo-card">
+    <div class="algo-title">Dose Algorithm Reminders</div>
+    <div class="algo-item">Select and titrate (6-hourly) blood and dialysate flows according to tables</div>
+    <div class="algo-item">Administer 50 mL of 8.4% Bicarbonate over 30 min if pH &lt; 7.20</div>
+    <div class="algo-item highlight">Re-check Ca 30 min after any dose adjustments — titrate according to Ca table</div>
+  </div>
+</div>
+
+<script>
+  // ── Service Worker ───────────────────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js')
+      .then(() => console.log('SW registered'))
+      .catch(e => console.warn('SW failed:', e));
+  }
+
+  // ── Offline indicator ────────────────────────────────
+  function updateOnlineStatus() {
+    document.getElementById('offline-badge').style.display = navigator.onLine ? 'none' : 'block';
+  }
+  window.addEventListener('online', updateOnlineStatus);
+  window.addEventListener('offline', updateOnlineStatus);
+  updateOnlineStatus();
+
+  // ── Splash ───────────────────────────────────────────
+  function enterApp() {
+    document.getElementById('splash').classList.add('hide');
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('app').style.display = 'block';
+    }, 600);
+  }
+
+  setTimeout(() => {
+    if (!document.getElementById('splash').classList.contains('hide')) enterApp();
+  }, 4000);
+
+  // ── Calculator ───────────────────────────────────────
+  const state = { weight: null, ph: null, k: null };
+
+  const tables = {
+    lt65: {
+      bloodFlow: { lt71:130, '71-719':120, '72-729':110, '73-739':100, '74-744':80, '745-749':80, '75-754':80, gt755:null },
+      dialysate: {
+        gt6:    { lt71:2300, '71-719':2300, '72-729':2200, '73-739':2200, '74-744':2200, '745-749':2300, '75-754':null, gt755:null },
+        '55-6': { lt71:2100, '71-719':2100, '72-729':2100, '73-739':2000, '74-744':1900, '745-749':2100, '75-754':2300, gt755:null },
+        '5-55': { lt71:1900, '71-719':1900, '72-729':1900, '73-739':1800, '74-744':1700, '745-749':1900, '75-754':2100, gt755:null },
+        '45-5': { lt71:1800, '71-719':1700, '72-729':1700, '73-739':1600, '74-744':1500, '745-749':1900, '75-754':2100, gt755:null },
+        '4-45': { lt71:1600, '71-719':1500, '72-729':1400, '73-739':1400, '74-744':1400, '745-749':1700, '75-754':2100, gt755:null },
+        lt4:    { lt71:1400, '71-719':1400, '72-729':1400, '73-739':1400, '74-744':1400, '745-749':1700, '75-754':2100, gt755:null }
+      }
+    },
+    gte65: {
+      bloodFlow: { lt71:150, '71-719':140, '72-729':130, '73-739':110, '74-744':90, '745-749':80, '75-754':80, gt755:null },
+      dialysate: {
+        gt6:    { lt71:2700, '71-719':2700, '72-729':2600, '73-739':2600, '74-744':2600, '745-749':2700, '75-754':null, gt755:null },
+        '55-6': { lt71:2500, '71-719':2500, '72-729':2500, '73-739':2400, '74-744':2300, '745-749':2500, '75-754':2700, gt755:null },
+        '5-55': { lt71:2300, '71-719':2300, '72-729':2300, '73-739':2200, '74-744':2100, '745-749':2300, '75-754':2500, gt755:null },
+        '45-5': { lt71:2200, '71-719':2100, '72-729':2100, '73-739':2000, '74-744':1900, '745-749':2300, '75-754':2500, gt755:null },
+        '4-45': { lt71:2000, '71-719':1900, '72-729':1800, '73-739':1800, '74-744':1800, '745-749':2100, '75-754':2500, gt755:null },
+        lt4:    { lt71:1800, '71-719':1800, '72-729':1800, '73-739':1800, '74-744':1800, '745-749':2100, '75-754':2500, gt755:null }
+      }
+    }
+  };
+
+  const phLabels = { lt71:'<7.1', '71-719':'7.10–7.19', '72-729':'7.20–7.29', '73-739':'7.30–7.39', '74-744':'7.40–7.44', '745-749':'7.45–7.49', '75-754':'7.50–7.54', gt755:'>7.55' };
+  const kLabels  = { gt6:'>6', '55-6':'5.5–6', '5-55':'5–5.5', '45-5':'4.5–5', '4-45':'4–4.5', lt4:'<4' };
+
+  function select(field, value, btnClass) {
+    state[field] = value;
+    document.querySelectorAll('.' + btnClass).forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+
+    if (field === 'weight') {
+      document.getElementById('card-ph').style.display = 'block';
+      document.getElementById('card-ph').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    if (field === 'ph') {
+      document.getElementById('card-k').style.display = 'block';
+      updateBloodFlow();
+      document.getElementById('card-k').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    if (field === 'k') calculate();
+  }
+
+  function updateBloodFlow() {
+    if (!state.weight || !state.ph) return;
+    const bf = tables[state.weight].bloodFlow[state.ph];
+    const bfCard = document.getElementById('bf-card');
+    document.getElementById('bicarb-alert').style.display =
+      ['lt71','71-719','72-729'].includes(state.ph) ? 'block' : 'none';
+    if (bf === null) { bfCard.style.display = 'none'; return; }
+    document.getElementById('bf-value').textContent = bf;
+    document.getElementById('bf-context').textContent = `IBW ${state.weight === 'lt65' ? '<65' : '≥65'} kg · pH ${phLabels[state.ph]}`;
+    bfCard.style.display = 'block';
+  }
+
+  function calculate() {
+    if (!state.weight || !state.ph || !state.k) return;
+    const isStop = state.ph === 'gt755';
+    const dialysate = isStop ? null : tables[state.weight].dialysate[state.k][state.ph];
+    const resultDiv = document.getElementById('result');
+    const card = document.getElementById('result-card');
+    resultDiv.style.display = 'block';
+
+    if (isStop || dialysate === null) {
+      card.className = 'result-card stop';
+      document.getElementById('result-label').textContent = 'Action Required';
+      document.getElementById('result-main').textContent = 'STOP & Switch to Heparin';
+      document.getElementById('result-unit').textContent = 'CRRT still required';
+      document.getElementById('result-summary').innerHTML = `pH <span>${phLabels[state.ph]}</span> — citrate anticoagulation contraindicated. Switch anticoagulation strategy. CRRT circuit should be maintained.`;
+    } else {
+      card.className = 'result-card normal';
+      document.getElementById('result-label').textContent = 'Dialysate Flow Rate (Q\u2082)';
+      document.getElementById('result-main').textContent = dialysate.toLocaleString();
+      document.getElementById('result-unit').textContent = 'mL/hr';
+      const bf = tables[state.weight].bloodFlow[state.ph];
+      document.getElementById('result-summary').innerHTML = `
+        IBW <span>${state.weight === 'lt65' ? '< 65 kg' : '≥ 65 kg'}</span> ·
+        pH <span>${phLabels[state.ph]}</span> ·
+        K⁺ <span>${kLabels[state.k]} mmol/L</span><br>
+        Blood flow Q<sub>B</sub>: <span>${bf} mL/hr</span><br>
+        <span style="color:var(--teal);font-size:12px">↻ Re-check Ca 30 min after dose adjustment</span>
+      `;
+    }
+    resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function resetAll() {
+    state.weight = null; state.ph = null; state.k = null;
+    ['card-ph','card-k','bf-card','bicarb-alert','result'].forEach(id => {
+      document.getElementById(id).style.display = 'none';
+    });
+    document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
