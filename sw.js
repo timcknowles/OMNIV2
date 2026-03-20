@@ -9,8 +9,10 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => c.addAll(ASSETS))
   );
+  // Do NOT skipWaiting here — let the page trigger it
+  // so the version stamp updates correctly
 });
 
 self.addEventListener('activate', e => {
@@ -34,9 +36,7 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// Respond to version request from page
 self.addEventListener('message', e => {
-  if (e.data && e.data.type === 'GET_VERSION') {
-    e.ports[0].postMessage({ version: CACHE });
-  }
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (e.data && e.data.type === 'GET_VERSION') e.ports[0].postMessage({ version: CACHE.replace('rca-calc-','') });
 });
