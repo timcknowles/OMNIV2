@@ -216,6 +216,12 @@
   label strong { color: var(--text); font-size: 15px; }
   .btn-group { display: flex; flex-wrap: wrap; gap: 8px; }
 
+  .btn-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
   .btn {
     flex: 1;
     min-width: 70px;
@@ -440,13 +446,13 @@
     <div class="card-title">Step 3 — Serum K⁺</div>
     <div class="input-group">
       <label><strong>Select potassium (mmol/L)</strong></label>
-      <div class="btn-group">
-        <button class="btn k-btn" onclick="select('k','gt6','k-btn')">&gt;6</button>
-        <button class="btn k-btn" onclick="select('k','55-6','k-btn')">5.5–6</button>
-        <button class="btn k-btn" onclick="select('k','5-55','k-btn')">5–5.5</button>
-        <button class="btn k-btn" onclick="select('k','45-5','k-btn')">4.5–5</button>
-        <button class="btn k-btn" onclick="select('k','4-45','k-btn')">4–4.5</button>
+      <div class="btn-grid-3">
         <button class="btn k-btn" onclick="select('k','lt4','k-btn')">&lt;4</button>
+        <button class="btn k-btn" onclick="select('k','4-45','k-btn')">4–4.5</button>
+        <button class="btn k-btn" onclick="select('k','45-5','k-btn')">4.5–5</button>
+        <button class="btn k-btn" onclick="select('k','5-55','k-btn')">5–5.5</button>
+        <button class="btn k-btn" onclick="select('k','55-6','k-btn')">5.5–6</button>
+        <button class="btn k-btn" onclick="select('k','gt6','k-btn')">&gt;6</button>
       </div>
     </div>
   </div>
@@ -465,6 +471,8 @@
     </div>
   </div>
 
+
+
   <div class="alert" id="bicarb-alert">
     <strong>⚠ pH &lt; 7.20 detected</strong>
     Administer 50 mL of 8.4% Bicarbonate over 30 minutes
@@ -480,12 +488,7 @@
     <button class="reset-btn" onclick="resetAll()">↺ Start over</button>
   </div>
 
-  <div class="algo-card">
-    <div class="algo-title">Dose Algorithm Reminders</div>
-    <div class="algo-item">Select and titrate (6-hourly) blood and dialysate flows according to tables</div>
-    <div class="algo-item">Administer 50 mL of 8.4% Bicarbonate over 30 min if pH &lt; 7.20</div>
-    <div class="algo-item highlight">Re-check Ca 30 min after any dose adjustments — titrate according to Ca table</div>
-  </div>
+
 </div>
 
 <script>
@@ -602,7 +605,7 @@
         pH <span>${phLabels[state.ph]}</span> ·
         K⁺ <span>${kLabels[state.k]} mmol/L</span><br>
         Blood flow Q<sub>B</sub>: <span>${bf} mL/hr</span><br>
-        <span style="color:var(--teal);font-size:12px">↻ Re-check Ca 30 min after dose adjustment</span>
+        <span style="color:var(--teal);font-size:12px"></span>
       `;
     }
     resultDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
