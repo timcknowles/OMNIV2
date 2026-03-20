@@ -1,4 +1,4 @@
-const CACHE = 'rca-calc-v1.0';
+const CACHE = 'rca-calc-v1.1';
 const ASSETS = [
   '/OMNIV2/',
   '/OMNIV2/index.html',
@@ -10,9 +10,7 @@ const ASSETS = [
 
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE)
-      .then(c => c.addAll(ASSETS))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE).then(c => c.addAll(ASSETS))
   );
 });
 
@@ -26,15 +24,22 @@ self.addEventListener('activate', e => {
   );
 });
 
+// Network-first: always try to get fresh content, fall back to cache offline
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(response => {
+    fetch(e.request)
+      .then(response => {
         const clone = response.clone();
         caches.open(CACHE).then(c => c.put(e.request, clone));
         return response;
-      }).catch(() => cached);
-    })
+      })
+      .catch(() => caches.match(e.request))
   );
+});
+
+// Page triggers this to activate a waiting SW immediately
+self.addEventListener('message', e => {
+  if (e.data && e.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

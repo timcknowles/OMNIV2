@@ -492,11 +492,36 @@
 </div>
 
 <script>
-  // ── Service Worker ───────────────────────────────────
+  // ── Service Worker with auto-update ─────────────────
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js')
-      .then(() => console.log('SW registered'))
-      .catch(e => console.warn('SW failed:', e));
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      // Check for updates every time the page loads
+      reg.update();
+
+      // If a new SW is waiting, reload immediately to activate it
+      if (reg.waiting) {
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+      }
+
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        newWorker.addEventListener('statechange', () => {
+          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+            // New version available — tell it to take over and reload
+            newWorker.postMessage({ type: 'SKIP_WAITING' });
+          }
+        });
+      });
+    }).catch(e => console.warn('SW failed:', e));
+
+    // When the SW takes control, reload to get fresh content
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
   }
 
   // ── Offline indicator ────────────────────────────────
