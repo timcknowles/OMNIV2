@@ -2,7 +2,7 @@
   "name": "RCA Dose Calculator",
   "short_name": "RCA Calc",
   "description": "Regional Citrate Anticoagulation dose selection for CRRT",
-  "start_url": "./",
+  "start_url": "/OMNIV2/",
   "display": "standalone",
   "background_color": "#0d1117",
   "theme_color": "#0d1117",

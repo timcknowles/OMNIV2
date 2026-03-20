@@ -1,7 +1,11 @@
 const CACHE = 'rca-calc-v1.0';
 const ASSETS = [
-  './',
-  './index.html'
+  '/OMNIV2/',
+  '/OMNIV2/index.html',
+  '/OMNIV2/sw.js',
+  '/OMNIV2/manifest.json',
+  '/OMNIV2/icon-192.svg',
+  '/OMNIV2/icon-512.svg'
 ];
 
 self.addEventListener('install', e => {
