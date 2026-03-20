@@ -2,7 +2,6 @@ const CACHE = 'rca-calc-v1.1';
 const ASSETS = [
   '/OMNIV2/',
   '/OMNIV2/index.html',
-  '/OMNIV2/sw.js',
   '/OMNIV2/manifest.json',
   '/OMNIV2/icon-192.svg',
   '/OMNIV2/icon-512.svg'
@@ -17,14 +16,12 @@ self.addEventListener('install', e => {
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-      )
+      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
     ).then(() => self.clients.claim())
   );
 });
 
-// Network-first: always try to get fresh content, fall back to cache offline
+// Network-first: fresh content when online, cache fallback when offline
 self.addEventListener('fetch', e => {
   e.respondWith(
     fetch(e.request)
@@ -37,9 +34,13 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// Page triggers this to activate a waiting SW immediately
+// Handle messages from the page
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
+  }
+  // Report current version back to page
+  if (e.data && e.data.type === 'GET_VERSION') {
+    e.ports[0].postMessage({ version: CACHE });
   }
 });
