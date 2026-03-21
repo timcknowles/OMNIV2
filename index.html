@@ -75,6 +75,7 @@
   .btn-group{display:flex;flex-wrap:wrap;gap:8px;}
   .btn-grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
   .btn-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .btn-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
   .btn{padding:11px 8px;border-radius:8px;border:1.5px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'DM Mono',monospace;font-size:13px;cursor:pointer;transition:all 0.15s ease;text-align:center;line-height:1.3;width:100%;}
   .btn:hover,.btn:active{border-color:var(--teal);color:var(--teal);}
   .btn.weight-btn.active{background:var(--blue-dim);border-color:var(--blue);color:var(--blue);}
@@ -276,7 +277,7 @@
   <!-- Step 3: pH -->
   <div class="card" id="card-ph" style="display:none">
     <div class="card-title dot-amber">Step 3 &#x2014; Arterial pH</div>
-    <div class="btn-group" id="ph-buttons"></div>
+    <div id="ph-buttons"></div>
   </div>
 
   <!-- Step 4: K+ -->
@@ -670,6 +671,7 @@
   function buildPhButtons(proto) {
     const c = document.getElementById('ph-buttons');
     c.innerHTML = '';
+    c.className = proto === 'citrate' ? 'btn-grid-4' : 'btn-grid-3';
     phConfig[proto].forEach(p => {
       const b = document.createElement('button');
       b.className = 'btn ph-btn';
