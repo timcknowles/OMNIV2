@@ -1,4 +1,4 @@
-const CACHE = 'rca-calc-v1.2';
+const CACHE = 'rca-calc-v1.1';
 const ASSETS = [
   '/OMNIV2/',
   '/OMNIV2/index.html',
